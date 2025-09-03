@@ -1,156 +1,122 @@
-// Initialize the map and set view to a specific location (London)
+// Initialize the map and set view to Florida
 var map = L.map("map").setView([28.48, -81.4], 6);
 
 // Add OpenStreetMap tile layer
-// L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-//   maxZoom: 19,
-//   attribution:
-//     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-// }).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+}).addTo(map);
 
-// var Stadia_AlidadeSmooth = L.tileLayer(
-//   "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}",
-//   {
-//     minZoom: 0,
-//     maxZoom: 20,
-//     attribution:
-//       '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-//     ext: "png",
-//   }
-// ).addTo(map);
-
-var Stadia_AlidadeSatellite = L.tileLayer(
-  "https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}",
-  {
-    minZoom: 0,
-    maxZoom: 20,
-    attribution:
-      '&copy; CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data) | &copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    ext: "jpg",
-  }
-).addTo(map);
-
-
-
-
+// Add geocoder control to the map
+L.Control.geocoder({
+  defaultMarkGeocode: true,
+  placeholder: "Search for location...",
+  errorMessage: "Location not found.",
+  showResultIcons: true
+}).addTo(map);
 
 // Popup on map click
 var popup = L.popup();
-
-function onMapClick(e) {
+map.on("click", function (e) {
   popup
     .setLatLng(e.latlng)
     .setContent("You clicked the map at " + e.latlng.toString())
     .openOn(map);
-}
+});
 
-map.on("click", onMapClick);
+// Flood layers
+const floodLayers = {
+  "1ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood1Ft/{z}/{x}/{y}.png", { attribution: "Flood 1ft", minZoom: 1, maxZoom: 11 }),
+  "2ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood2Ft/{z}/{x}/{y}.png", { attribution: "Flood 2ft", minZoom: 1, maxZoom: 11 }),
+  "3ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood3Ft/{z}/{x}/{y}.png", { attribution: "Flood 3ft", minZoom: 1, maxZoom: 11 }),
+  "4ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood4Ft/{z}/{x}/{y}.png", { attribution: "Flood 4ft", minZoom: 1, maxZoom: 11 }),
+  "5ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood5Ft/{z}/{x}/{y}.png", { attribution: "Flood 5ft", minZoom: 1, maxZoom: 11 }),
+  "6ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood6Ft/{z}/{x}/{y}.png", { attribution: "Flood 6ft", minZoom: 1, maxZoom: 11 }),
+  "7ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood7Ft/{z}/{x}/{y}.png", { attribution: "Flood 7ft", minZoom: 1, maxZoom: 11 }),
+};
 
-const flood7ft = L.tileLayer(
-  "http://127.0.0.1:5500/tiles/Flood7Ft/{z}/{x}/{y}.png",
-  {
-    attribution: "Flood 7ft",
-    minZoom: 1,
-    maxZoom: 11,
-  }
-);
+// Labels layer
+const labelsOnly = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
+  attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: "abcd",
+  maxZoom: 19,
+});
 
-const flood1ft = L.tileLayer(
-  "http://127.0.0.1:5500/tiles/Flood1Ft/{z}/{x}/{y}.png",
-  {
-    attribution: "Flood 1ft",
-    minZoom: 1,
-    maxZoom: 11,
-  }
-);
+// County Lines layer
+const countyLines = L.tileLayer("http://127.0.0.1:5500/tiles/CountyLine/{z}/{x}/{y}.png", {
+  attribution: "County Lines",
+  minZoom: 1,
+  maxZoom: 11,
+});
 
-const labelsOnly = L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
-  {
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: "abcd",
-    maxZoom: 19,
-  }
-);
-
-// Add the 7ft layer by default
-let currentFloodLayer = flood7ft;
+// Initial setup
+let currentFloodLayer = floodLayers["7ft"];
 currentFloodLayer.addTo(map);
 labelsOnly.addTo(map);
 
-// Toggle button logic
-const toggleBtn = document.getElementById("toggleBtn");
+// Dropdown layer switcher
+const layerSelect = document.getElementById("layerSelect");
 const mapInfo = document.getElementById("mapInfo");
 
-toggleBtn.addEventListener("click", function () {
-  if (map.hasLayer(flood7ft)) {
-    map.removeLayer(flood7ft);
-    flood1ft.addTo(map);
-    currentFloodLayer = flood1ft;
-    toggleBtn.textContent = "Switch to 7ft Flood Layer";
-
-    // Update info text
-    mapInfo.innerHTML = `
-      <p>
-        This map shows areas in Florida potentially affected by a <strong>1-foot sea-level rise</strong>.
-        Use the button to toggle back to the 7ft flood layer. The color legend helps interpret flood depths.
-      </p>
-    `;
-  } else {
-    map.removeLayer(flood1ft);
-    flood7ft.addTo(map);
-    currentFloodLayer = flood7ft;
-    toggleBtn.textContent = "Switch to 1ft Flood Layer";
-
-    // Update info text
-    mapInfo.innerHTML = `
-      <p>
-        This map shows areas in Florida potentially affected by a <strong>7-foot sea-level rise</strong>.
-        Use the button to toggle to the 1ft flood layer. The color legend helps interpret flood depths.
-      </p>
-    `;
+layerSelect.addEventListener("change", function () {
+  if (map.hasLayer(currentFloodLayer)) {
+    map.removeLayer(currentFloodLayer);
   }
-
-  // Re-add labels to ensure they're visible
+  currentFloodLayer = floodLayers[layerSelect.value];
+  currentFloodLayer.addTo(map);
   labelsOnly.addTo(map);
+
+  mapInfo.innerHTML = `<p>This map shows areas in Florida potentially affected by a <strong>${layerSelect.value}-foot sea-level rise</strong>.</p>`;
 });
 
+// Legend with Other Layers
 var legend = L.control({ position: "bottomright" });
 
-legend.onAdd = function (map) {
+legend.onAdd = function () {
   var div = L.DomUtil.create("div", "legend");
-  var grades = [
-    { label: "0 to 5 inches", color: "limegreen" },
-    { label: "6 to 11 inches", color: "lightpink" },
-    { label: "12 to 17 inches", color: "hotpink" },
-    { label: "18 to 23 inches", color: "violet" },
-    { label: "2 to 3 feet", color: "skyblue", colorName: "Sky Blue" },
-    { label: "3 to 4 feet", color: "orange", colorName: "Orange" },
-    { label: "4 to 5 feet", color: "gold", colorName: "Gold" },
-    { label: "5 to 6 feet", color: "orangered", colorName: "Orange Red" },
-    { label: "6 to 7 feet", color: "crimson", colorName: "Crimson" },
-    {
-      label: "7 to 8 feet",
-      color: "mediumvioletred",
-      colorName: "Medium Violet Red",
-    },
-    { label: "8 to 9 feet", color: "darkmagenta", colorName: "Dark Magenta" },
-    {
-      label: "9 to 10 feet",
-      color: "darkslateblue",
-      colorName: "Dark Slate Blue",
-    },
-    { label: "10 to 11 feet", color: "teal", colorName: "Teal" },
-    { label: "11 to 12 feet", color: "saddlebrown", colorName: "Saddle Brown" },
-  ];
 
-  div.innerHTML = "<h4>Flood Depth</h4>";
-  grades.forEach(function (range) {
-    div.innerHTML +=
-      '<i style="background:' + range.color + '"></i> ' + range.label + "<br>";
-  });
+  div.innerHTML = `
+    <h4>Flood Depth</h4>
+    <div class="flood-legend">
+      <i style="background:limegreen"></i> 0 to 5 inches<br>
+      <i style="background:lightpink"></i> 6 to 11 inches<br>
+      <i style="background:hotpink"></i> 12 to 17 inches<br>
+      <i style="background:violet"></i> 18 to 23 inches<br>
+      <i style="background:skyblue"></i> 2 to 3 feet<br>
+      <i style="background:orange"></i> 3 to 4 feet<br>
+      <i style="background:gold"></i> 4 to 5 feet<br>
+      <i style="background:orangered"></i> 5 to 6 feet<br>
+      <i style="background:crimson"></i> 6 to 7 feet<br>
+      <i style="background:mediumvioletred"></i> 7 to 8 feet<br>
+      <i style="background:darkmagenta"></i> 8 to 9 feet<br>
+      <i style="background:darkslateblue"></i> 9 to 10 feet<br>
+      <i style="background:teal"></i> 10 to 11 feet<br>
+      <i style="background:saddlebrown"></i> 11 to 12 feet<br>
+    </div>
+
+    <h4>Other Layers</h4>
+    <div class="other-layers">
+      <input type="checkbox" id="insuranceRates" /> <label for="insuranceRates">Insurance Rates</label><br>
+      <input type="checkbox" id="hazardZones" /> <label for="hazardZones">Hazard Zones</label><br>
+      <input type="checkbox" id="vulnerabilityIndex" /> <label for="vulnerabilityIndex">Vulnerability Index</label><br>
+      <input type="checkbox" id="parcels" /> <label for="parcels">Parcels</label><br>
+      <input type="checkbox" id="countyLines" /> <label for="countyLines">County Lines</label>
+    </div>
+  `;
 
   return div;
 };
 
 legend.addTo(map);
+
+// Checkbox interactivity
+document.getElementById("countyLines").addEventListener("change", function () {
+  if (this.checked) {
+    map.addLayer(countyLines);
+  } else {
+    map.removeLayer(countyLines);
+  }
+});
+
+

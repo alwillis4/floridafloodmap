@@ -1,37 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet Map</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Florida Flood Map</title>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Leaflet Control Geocoder CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Florida Flood Map</h2>
-    <button id="toggleBtn">Switch to 1ft Flood Layer</button>
-    <div id="map"></div>
+  <h2>Florida Flood Map</h2>
 
-    <!-- Info Section -->
-    <div id="mapInfo">
-        <p>
-            This map shows areas in Florida potentially affected by a 7-foot sea-level rise.
-            
-        </p>
-    </div>
+  <!-- Dropdown Menu -->
+  <label for="layerSelect" style="margin-left:10px;">Select Flood Layer:</label>
+  <select id="layerSelect">
+    <option value="1ft">1ft Flood Layer</option>
+    <option value="2ft">2ft Flood Layer</option>
+    <option value="3ft">3ft Flood Layer</option>
+    <option value="4ft">4ft Flood Layer</option>
+    <option value="5ft">5ft Flood Layer</option>
+    <option value="6ft">6ft Flood Layer</option>
+    <option value="7ft" selected>7ft Flood Layer</option>
+  </select>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>
+  <div id="map"></div>
 
-    <!-- Custom JS -->
-    <script src="map.js"></script>
+  <!-- Info Section -->
+  <div id="mapInfo">
+    <p>This map shows areas in Florida potentially affected by a <strong>7-foot sea-level rise</strong>.</p>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Control Geocoder JS -->
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+  <!-- Custom JS -->
+  <script src="map.js"></script>
 </body>
 </html>

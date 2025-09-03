@@ -1,44 +1,70 @@
 /* Set the height and width of the map */
 #map {
-    height: 500px;
-    width: 100%;
-    border: 2px solid #333;
-    border-radius: 5px;
+  height: 500px;
+  width: 100%;
+  border: 2px solid #333;
+  border-radius: 5px;
 }
 
 /* Center the title */
 h2 {
-    text-align: center;
-    font-family: Arial, sans-serif;
-    color: #333;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #333;
 }
 
-#toggleBtn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
-    padding: 8px 12px;
-    background-color: white;
-    border: 1px solid #ccc;
-    cursor: pointer;
-  }
+/* Dropdown menu style */
+#layerSelect {
+  position: absolute;
+  top: 10px;
+  left: 180px;
+  z-index: 1000;
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
 
-  .legend {
-    background: white;
-    padding: 10px;
-    line-height: 18px;
-    color: #333;
-    font-size: 14px;
-    border-radius: 6px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  }
-  
+/* Legend styling */
+.legend {
+  background: white;
+  padding: 10px;
+  line-height: 18px;
+  color: #333;
+  font-size: 14px;
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  max-width: 200px;
+}
 
-  .legend i {
-    width: 18px;
-    height: 18px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.8;
-  }
+/* Legend section headers */
+.legend h4 {
+  margin: 6px 0;
+}
+
+/* Flood color swatches */
+.legend .flood-legend i {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  margin-right: 6px;
+  opacity: 0.8;
+}
+
+/* Other Layers section */
+.legend .other-layers {
+  margin-top: 6px;
+}
+
+.legend .other-layers input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+.legend .other-layers label {
+  cursor: pointer;
+}
+
+/* Optional: hover effect for checkboxes */
+.legend .other-layers input[type="checkbox"]:hover + label {
+  color: #007bff;
+}
