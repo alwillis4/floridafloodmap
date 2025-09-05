@@ -25,6 +25,7 @@ h2 {
   cursor: pointer;
 }
 
+
 /* Legend styling */
 .legend {
   background: white;
@@ -67,4 +68,13 @@ h2 {
 /* Optional: hover effect for checkboxes */
 .legend .other-layers input[type="checkbox"]:hover + label {
   color: #007bff;
+}
+
+
+.legend i {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.8;
 }
