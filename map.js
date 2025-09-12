@@ -50,6 +50,12 @@ const countyLines = L.tileLayer("http://127.0.0.1:5500/tiles/CountyLine/{z}/{x}/
   maxZoom: 11,
 });
 
+const hundredyearFloodplain = L.tileLayer("http://127.0.0.1:5500/tiles/100yearFloodplain/{z}/{x}/{y}.png", {
+  attribution: "100yearFloodplain",
+  minZoom: 1,
+  maxZoom: 11,
+});
+
 // Initial setup
 let currentFloodLayer = floodLayers["7ft"];
 currentFloodLayer.addTo(map);
@@ -70,38 +76,48 @@ layerSelect.addEventListener("change", function () {
   mapInfo.innerHTML = `<p>This map shows areas in Florida potentially affected by a <strong>${layerSelect.value}-foot sea-level rise</strong>.</p>`;
 });
 
-// Legend with Other Layers
+// Legend with tabs
 var legend = L.control({ position: "bottomright" });
 
 legend.onAdd = function () {
   var div = L.DomUtil.create("div", "legend");
 
   div.innerHTML = `
-    <h4>Flood Depth</h4>
-    <div class="flood-legend">
-      <i style="background:limegreen"></i> 0 to 5 inches<br>
-      <i style="background:lightpink"></i> 6 to 11 inches<br>
-      <i style="background:hotpink"></i> 12 to 17 inches<br>
-      <i style="background:violet"></i> 18 to 23 inches<br>
-      <i style="background:skyblue"></i> 2 to 3 feet<br>
-      <i style="background:orange"></i> 3 to 4 feet<br>
-      <i style="background:gold"></i> 4 to 5 feet<br>
-      <i style="background:orangered"></i> 5 to 6 feet<br>
-      <i style="background:crimson"></i> 6 to 7 feet<br>
-      <i style="background:mediumvioletred"></i> 7 to 8 feet<br>
-      <i style="background:darkmagenta"></i> 8 to 9 feet<br>
-      <i style="background:darkslateblue"></i> 9 to 10 feet<br>
-      <i style="background:teal"></i> 10 to 11 feet<br>
-      <i style="background:saddlebrown"></i> 11 to 12 feet<br>
+    <div class="tab-header">
+      <button class="tab-button active" data-tab="legendTab">Legend</button>
+      <button class="tab-button" data-tab="layersTab">Other Layers</button>
     </div>
 
-    <h4>Other Layers</h4>
-    <div class="other-layers">
-      <input type="checkbox" id="insuranceRates" /> <label for="insuranceRates">Insurance Rates</label><br>
-      <input type="checkbox" id="hazardZones" /> <label for="hazardZones">Hazard Zones</label><br>
-      <input type="checkbox" id="vulnerabilityIndex" /> <label for="vulnerabilityIndex">Vulnerability Index</label><br>
-      <input type="checkbox" id="parcels" /> <label for="parcels">Parcels</label><br>
-      <input type="checkbox" id="countyLines" /> <label for="countyLines">County Lines</label>
+    <div id="legendTab" class="tab-content active">
+      <h4>Flood Depth</h4>
+      <div class="flood-legend">
+        <i style="background:limegreen"></i> 0 to 5 inches<br>
+        <i style="background:lightpink"></i> 6 to 11 inches<br>
+        <i style="background:hotpink"></i> 12 to 17 inches<br>
+        <i style="background:violet"></i> 18 to 23 inches<br>
+        <i style="background:skyblue"></i> 2 to 3 feet<br>
+        <i style="background:orange"></i> 3 to 4 feet<br>
+        <i style="background:gold"></i> 4 to 5 feet<br>
+        <i style="background:orangered"></i> 5 to 6 feet<br>
+        <i style="background:crimson"></i> 6 to 7 feet<br>
+        <i style="background:mediumvioletred"></i> 7 to 8 feet<br>
+        <i style="background:darkmagenta"></i> 8 to 9 feet<br>
+        <i style="background:darkslateblue"></i> 9 to 10 feet<br>
+        <i style="background:teal"></i> 10 to 11 feet<br>
+        <i style="background:saddlebrown"></i> 11 to 12 feet<br>
+      </div>
+    </div>
+
+    <div id="layersTab" class="tab-content">
+      <h4>Other Layers</h4>
+      <div class="other-layers">
+        <input type="checkbox" id="insuranceRates" /> <label for="insuranceRates">Insurance Rates</label><br>
+        <input type="checkbox" id="hazardZones" /> <label for="hazardZones">Hazard Zones</label><br>
+        <input type="checkbox" id="vulnerabilityIndex" /> <label for="vulnerabilityIndex">Vulnerability Index</label><br>
+        <input type="checkbox" id="parcels" /> <label for="parcels">Parcels</label><br>
+        <input type="checkbox" id="countyLines" /> <label for="countyLines">County Lines</label><br>
+        <input type="checkbox" id="hundredyearFloodplain" /> <label for="100yearFloodplain">100 Year Floodplain</label>
+      </div>
     </div>
   `;
 
@@ -110,13 +126,36 @@ legend.onAdd = function () {
 
 legend.addTo(map);
 
-// Checkbox interactivity
-document.getElementById("countyLines").addEventListener("change", function () {
-  if (this.checked) {
-    map.addLayer(countyLines);
-  } else {
-    map.removeLayer(countyLines);
+// Tab switching logic
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("tab-button")) {
+    const tab = e.target.getAttribute("data-tab");
+
+    document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+    e.target.classList.add("active");
+
+    document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+    document.getElementById(tab).classList.add("active");
   }
 });
 
+// Checkbox interactivity
+document.addEventListener("change", function (e) {
+  if (e.target.id === "countyLines") {
+    if (e.target.checked) {
+      map.addLayer(countyLines);
+    } else {
+      map.removeLayer(countyLines);
+    }
+  }
+});
 
+document.addEventListener("change", function (e) {
+  if (e.target.id === "hundredyearFloodplain") {
+    if (e.target.checked) {
+      map.addLayer(hundredyearFloodplain);
+    } else {
+      map.removeLayer(hundredyearFloodplain);
+    }
+  }
+});

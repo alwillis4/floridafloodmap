@@ -25,22 +25,15 @@ h2 {
   cursor: pointer;
 }
 
-
 /* Legend styling */
 .legend {
   background: white;
   padding: 10px;
-  line-height: 18px;
   color: #333;
   font-size: 14px;
   border-radius: 6px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  max-width: 200px;
-}
-
-/* Legend section headers */
-.legend h4 {
-  margin: 6px 0;
+  max-width: 220px;
 }
 
 /* Flood color swatches */
@@ -50,6 +43,37 @@ h2 {
   display: inline-block;
   margin-right: 6px;
   opacity: 0.8;
+}
+
+/* Tabs header */
+.tab-header {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 6px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tab-button.active {
+  background: #007bff;
+  color: white;
+  border-bottom: 2px solid #0056b3;
+}
+
+/* Tab content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 /* Other Layers section */
@@ -65,16 +89,6 @@ h2 {
   cursor: pointer;
 }
 
-/* Optional: hover effect for checkboxes */
 .legend .other-layers input[type="checkbox"]:hover + label {
   color: #007bff;
-}
-
-
-.legend i {
-  width: 18px;
-  height: 18px;
-  float: left;
-  margin-right: 8px;
-  opacity: 0.8;
 }
