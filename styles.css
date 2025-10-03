@@ -92,3 +92,7 @@ h2 {
 .legend .other-layers input[type="checkbox"]:hover + label {
   color: #007bff;
 }
+
+.hidden {
+  display:none;
+}

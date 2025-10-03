@@ -1,6 +1,10 @@
 // Initialize the map and set view to Florida
 var map = L.map("map").setView([28.48, -81.4], 6);
 
+map.on("tileerror", function (err) {
+  console.error("Tile failed to load", err.tile.src);
+});
+
 // Add OpenStreetMap tile layer
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
@@ -13,7 +17,7 @@ L.Control.geocoder({
   defaultMarkGeocode: true,
   placeholder: "Search for location...",
   errorMessage: "Location not found.",
-  showResultIcons: true
+  showResultIcons: true,
 }).addTo(map);
 
 // Popup on map click
@@ -27,34 +31,97 @@ map.on("click", function (e) {
 
 // Flood layers
 const floodLayers = {
-  "1ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood1Ft/{z}/{x}/{y}.png", { attribution: "Flood 1ft", minZoom: 1, maxZoom: 11 }),
-  "2ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood2Ft/{z}/{x}/{y}.png", { attribution: "Flood 2ft", minZoom: 1, maxZoom: 11 }),
-  "3ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood3Ft/{z}/{x}/{y}.png", { attribution: "Flood 3ft", minZoom: 1, maxZoom: 11 }),
-  "4ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood4Ft/{z}/{x}/{y}.png", { attribution: "Flood 4ft", minZoom: 1, maxZoom: 11 }),
-  "5ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood5Ft/{z}/{x}/{y}.png", { attribution: "Flood 5ft", minZoom: 1, maxZoom: 11 }),
-  "6ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood6Ft/{z}/{x}/{y}.png", { attribution: "Flood 6ft", minZoom: 1, maxZoom: 11 }),
-  "7ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood7Ft/{z}/{x}/{y}.png", { attribution: "Flood 7ft", minZoom: 1, maxZoom: 11 }),
+  "1ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood1Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 1ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+  "2ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood2Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 2ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+  "3ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood3Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 3ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+  "4ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood4Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 4ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+  "5ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood5Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 5ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+  "6ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood6Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 6ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+  "7ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood7Ft/{z}/{x}/{y}.png", {
+    attribution: "Flood 7ft",
+    minZoom: 1,
+    maxZoom: 11,
+  }),
+
+  geoserver: L.tileLayer(
+    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:world/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+    {
+      attribution: "Geoserver",
+      minZoom: 1,
+      maxZoom: 20,
+    }
+  ),
+  disputed: L.tileLayer(
+    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:disputed_areas/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+    {
+      attribution: "Disputed Areas",
+      minZoom: 1,
+      maxZoom: 3,
+    }
+  ),
 };
 
 // Labels layer
-const labelsOnly = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png", {
-  attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: "abcd",
-  maxZoom: 19,
-});
+const labelsOnly = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+  {
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: "abcd",
+    maxZoom: 19,
+  }
+);
 
 // County Lines layer
-const countyLines = L.tileLayer("http://127.0.0.1:5500/tiles/CountyLine/{z}/{x}/{y}.png", {
-  attribution: "County Lines",
-  minZoom: 1,
-  maxZoom: 11,
-});
+const countyLines = L.tileLayer(
+  "http://127.0.0.1:5500/tiles/CountyLine/{z}/{x}/{y}.png",
+  {
+    attribution: "County Lines",
+    minZoom: 1,
+    maxZoom: 11,
+  }
+);
 
-const hundredyearFloodplain = L.tileLayer("http://127.0.0.1:5500/tiles/100yearFloodplain/{z}/{x}/{y}.png", {
-  attribution: "100yearFloodplain",
-  minZoom: 1,
-  maxZoom: 11,
-});
+const hundredyearFloodplain = L.tileLayer(
+  "http://127.0.0.1:5500/tiles/100yearFloodplain/{z}/{x}/{y}.png",
+  {
+    attribution: "100yearFloodplain",
+    minZoom: 1,
+    maxZoom: 11,
+  }
+);
+
+const fivehundredyearFloodplain = L.tileLayer(
+  "http://127.0.0.1:5500/tiles/500yearFloodplain/{z}/{x}/{y}.png",
+  {
+    attribution: "500yearFloodplain",
+    minZoom: 1,
+    maxZoom: 11,
+  }
+);
 
 // Initial setup
 let currentFloodLayer = floodLayers["7ft"];
@@ -104,7 +171,7 @@ legend.onAdd = function () {
         <i style="background:darkmagenta"></i> 8 to 9 feet<br>
         <i style="background:darkslateblue"></i> 9 to 10 feet<br>
         <i style="background:teal"></i> 10 to 11 feet<br>
-        <i style="background:saddlebrown"></i> 11 to 12 feet<br>
+        <i style="background:saddlebrown"></i> >11  feet<br>
       </div>
     </div>
 
@@ -116,7 +183,14 @@ legend.onAdd = function () {
         <input type="checkbox" id="vulnerabilityIndex" /> <label for="vulnerabilityIndex">Vulnerability Index</label><br>
         <input type="checkbox" id="parcels" /> <label for="parcels">Parcels</label><br>
         <input type="checkbox" id="countyLines" /> <label for="countyLines">County Lines</label><br>
-        <input type="checkbox" id="hundredyearFloodplain" /> <label for="100yearFloodplain">100 Year Floodplain</label>
+        <input type="checkbox" id="hundredyearFloodplain" legend="100yearlegend" /> <label for="100yearFloodplain">100 Year Floodplain</label>
+        <div class="flood-legend hidden" id="100yearlegend">
+        <i style="background:limegreen"></i> In 100 Year Floodplain<br>
+        </div> <br>
+        <input type="checkbox" id="fivehundredyearFloodplain" legend="500yearlegend" /> <label for="500yearFloodplain">500 Year Floodplain</label>
+        <div class="flood-legend hidden" id="500yearlegend">
+        <i style="background:purple"></i> In 500 Year Floodplain<br>
+        </div>
       </div>
     </div>
   `;
@@ -131,10 +205,14 @@ document.addEventListener("click", function (e) {
   if (e.target.classList.contains("tab-button")) {
     const tab = e.target.getAttribute("data-tab");
 
-    document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+    document
+      .querySelectorAll(".tab-button")
+      .forEach((btn) => btn.classList.remove("active"));
     e.target.classList.add("active");
 
-    document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+    document
+      .querySelectorAll(".tab-content")
+      .forEach((tc) => tc.classList.remove("active"));
     document.getElementById(tab).classList.add("active");
   }
 });
@@ -152,10 +230,30 @@ document.addEventListener("change", function (e) {
 
 document.addEventListener("change", function (e) {
   if (e.target.id === "hundredyearFloodplain") {
+    const legendid = e.target.getAttribute("legend");
+    console.log(legendid);
+    const legendelement = document.getElementById(legendid);
     if (e.target.checked) {
       map.addLayer(hundredyearFloodplain);
+      legendelement.classList.remove("hidden");
     } else {
       map.removeLayer(hundredyearFloodplain);
+      legendelement.classList.add("hidden");
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "fivehundredyearFloodplain") {
+    const legendid = e.target.getAttribute("legend");
+    console.log(legendid);
+    const legendelement = document.getElementById(legendid);
+    if (e.target.checked) {
+      map.addLayer(fivehundredyearFloodplain);
+      legendelement.classList.remove("hidden");
+    } else {
+      map.removeLayer(fivehundredyearFloodplain);
+      legendelement.classList.add("hidden");
     }
   }
 });
