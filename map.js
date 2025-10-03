@@ -83,6 +83,15 @@ const floodLayers = {
       maxZoom: 3,
     }
   ),
+
+  test_7ft : L.tileLayer(
+    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_7_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+    {
+      attribution: "FGDL 7 Foot Flood Layer",
+      minZoom: 1,
+      maxZoom: 20,
+    }
+  ),
 };
 
 // Labels layer
