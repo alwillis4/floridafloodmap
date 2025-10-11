@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.0.0"
+    xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd"
+    xmlns="http://www.opengis.net/sld"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <NamedLayer>
+    <Name>flood_7ft_style</Name>
+    <UserStyle>
+      <Title>Flood Depth Raster Style</Title>
+      <Abstract>Colors for different flood depths based on inches and feet</Abstract>
+      <FeatureTypeStyle>
+        <Rule>
+          <RasterSymbolizer>
+            <Opacity>1.0</Opacity>
+            <ColorMap>
+              <ColorMapEntry color="#FFFFFF" quantity="0" opacity="0.0" />
+              <ColorMapEntry color="#5bd75b" quantity="1" label="0 to 5 in"/>
+              <ColorMapEntry color="#ffc5cd" quantity="2" label="6 to 11 in"/>
+              <ColorMapEntry color="#ff87c3" quantity="3" label="12 to 17 in"/>
+              <ColorMapEntry color="#f19bf1" quantity="4" label="18 to 23 in"/>
+              <ColorMapEntry color="#9fd8ef" quantity="5" label="2 to 3 ft"/>
+              <ColorMapEntry color="#ffb733" quantity="6" label="3 to 4 ft"/>
+              <ColorMapEntry color="#ffdf33" quantity="7" label="4 to 5 ft"/>
+              <ColorMapEntry color="#ff6a33" quantity="8" label="5 to 6 ft"/>
+              <ColorMapEntry color="#e34363" quantity="9" label="6 to 7 ft"/>
+              <ColorMapEntry color="#d2449d" quantity="10" label="7 to 8 ft"/>
+              <ColorMapEntry color="#a233a2" quantity="11" label="8 to 9 ft"/>
+              <ColorMapEntry color="#6d64a2" quantity="12" label="9 to 10 ft"/>
+              <ColorMapEntry color="#339999" quantity="13" label="10 to 11 ft"/>
+              <ColorMapEntry color="#a26a42" quantity="14" label=">11 ft"/>
+            </ColorMap>
+          </RasterSymbolizer>
+        </Rule>
+      </FeatureTypeStyle>
+    </UserStyle>
+  </NamedLayer>
+</StyledLayerDescriptor>

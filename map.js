@@ -31,40 +31,40 @@ map.on("click", function (e) {
 
 // Flood layers
 const floodLayers = {
-  "1ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood1Ft/{z}/{x}/{y}.png", {
+  "1ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_1_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 1ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
-  "2ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood2Ft/{z}/{x}/{y}.png", {
+  "2ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_2_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 2ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
-  "3ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood3Ft/{z}/{x}/{y}.png", {
+  "3ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_3_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 3ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
-  "4ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood4Ft/{z}/{x}/{y}.png", {
+  "4ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_4_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 4ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
-  "5ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood5Ft/{z}/{x}/{y}.png", {
+  "5ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_5_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 5ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
-  "6ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood6Ft/{z}/{x}/{y}.png", {
+  "6ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_6_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 6ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
-  "7ft": L.tileLayer("http://127.0.0.1:5500/tiles/Flood7Ft/{z}/{x}/{y}.png", {
+  "7ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_7_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 7ft",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }),
 
   geoserver: L.tileLayer(
@@ -84,10 +84,18 @@ const floodLayers = {
     }
   ),
 
-  test_7ft : L.tileLayer(
+  test_7ft: L.tileLayer(
     "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_7_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
     {
       attribution: "FGDL 7 Foot Flood Layer",
+      minZoom: 1,
+      maxZoom: 20,
+    }
+  ),
+  test_6ft: L.tileLayer(
+    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_6_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+    {
+      attribution: "FGDL 6 Foot Flood Layer",
       minZoom: 1,
       maxZoom: 20,
     }
@@ -137,10 +145,28 @@ let currentFloodLayer = floodLayers["7ft"];
 currentFloodLayer.addTo(map);
 labelsOnly.addTo(map);
 
-// Dropdown layer switcher
+// Dropdown and info section
 const layerSelect = document.getElementById("layerSelect");
 const mapInfo = document.getElementById("mapInfo");
 
+// Detailed flood level descriptions
+const floodDescriptions = {
+  "1ft": `The 1 foot flood inundation (also known as flooding) depth map is used to show a projected 1 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 1 foot storm surge can happen whenever a strong storm makes landfall in the state.`,
+
+  "2ft": `The 2 feet flood inundation (also known as flooding) depth map is used to show a projected 2 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 2 feet storm surge can happen whenever a strong storm makes landfall and can occur yearly all year round.`,
+
+  "3ft": `The 3 feet flood inundation (also known as flooding) depth map is used to show a projected 3 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 3 feet storm surge can happen whenever a strong storm makes landfall and can occur yearly all year round.`,
+
+  "4ft": `The 4 feet flood inundation (also known as flooding) depth map is used to show a projected 4 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 4 feet storm surge is less likely to occur and occur during tropical storm and categories 1 and 2 hurricanes.`,
+
+  "5ft": `The 5 feet flood inundation (also known as flooding) depth map is used to show a projected 5 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 5 feet storm surge is less likely to occur and can occur during stronger tropical storms and category 2 hurricanes.`,
+
+  "6ft": `The 6 feet flood inundation (also known as flooding) depth map is used to show a projected 6 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 6 feet storm surge is less likely to occur and occur during tropical storm and categories 1 and 2 hurricanes.`,
+
+  "7ft": `The 7 feet flood inundation (also known as flooding) depth map is used to show a projected 7 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 7 feet storm surge is less likely to occur and occur in categories 3 and above hurricanes. These major hurricanes can occur in about three to five years in the state though the panhandle is variable and can suffer from major hurricanes and storms more often than the rest of the state.`
+};
+
+// Dropdown layer switcher with new descriptions
 layerSelect.addEventListener("change", function () {
   if (map.hasLayer(currentFloodLayer)) {
     map.removeLayer(currentFloodLayer);
@@ -149,7 +175,12 @@ layerSelect.addEventListener("change", function () {
   currentFloodLayer.addTo(map);
   labelsOnly.addTo(map);
 
-  mapInfo.innerHTML = `<p>This map shows areas in Florida potentially affected by a <strong>${layerSelect.value}-foot sea-level rise</strong>.</p>`;
+  const selectedValue = layerSelect.value;
+  if (floodDescriptions[selectedValue]) {
+    mapInfo.innerHTML = `<p>${floodDescriptions[selectedValue]}</p>`;
+  } else {
+    mapInfo.innerHTML = `<p>Selected layer: <strong>${selectedValue}</strong></p>`;
+  }
 });
 
 // Legend with tabs
@@ -240,7 +271,6 @@ document.addEventListener("change", function (e) {
 document.addEventListener("change", function (e) {
   if (e.target.id === "hundredyearFloodplain") {
     const legendid = e.target.getAttribute("legend");
-    console.log(legendid);
     const legendelement = document.getElementById(legendid);
     if (e.target.checked) {
       map.addLayer(hundredyearFloodplain);
@@ -255,7 +285,6 @@ document.addEventListener("change", function (e) {
 document.addEventListener("change", function (e) {
   if (e.target.id === "fivehundredyearFloodplain") {
     const legendid = e.target.getAttribute("legend");
-    console.log(legendid);
     const legendelement = document.getElementById(legendid);
     if (e.target.checked) {
       map.addLayer(fivehundredyearFloodplain);
