@@ -1,6 +1,54 @@
 // Initialize the map and set view to Florida
 var map = L.map("map").setView([28.48, -81.4], 6);
 
+const getRiskMessageFlood = (palette_index) => {
+  if (palette_index === 0) {
+    return "No Risk";
+  } else if (palette_index === 1 ) {
+    return "0 to 5 inches";
+  } else if (palette_index === 2 ) {
+    return "6 to 11 inches";
+  } else if (palette_index === 3 ) {
+    return "12 to 17 inches";
+  } else if (palette_index === 4 ) {
+    return "18 to 23 inches";
+  } else if (palette_index === 5 ) {
+    return "2 to 3 feet";
+  } else if (palette_index === 6 ) {
+    return "3 to 4 feet";
+  } else if (palette_index === 7 ) {
+    return "4 to 5 feet";
+  } else if (palette_index === 8 ) {
+    return "5 to 6 feet";
+  } else if (palette_index === 9 ) {
+    return "6 to 7 feet";
+  } else if (palette_index === 10 ) {
+    return "7 to 8 feet";
+  } else if (palette_index === 11 ) {
+    return "8 to 9 feet";
+  } else if (palette_index === 12 ) {
+    return "9 to 10 feet";
+  } else if (palette_index === 13 ) {
+    return "10 to 11 feet";
+  } else if (palette_index === 14 ) {
+    return ">11 feet";
+  }else{
+    return "Error in data";
+  }}
+const getRiskMessageStormSurge = (palette_index) => {
+  if (palette_index === 0) {
+    return "No Risk";
+  } else if (palette_index === 1 ) {
+    return "Zone 1";
+  } else if (palette_index === 2 ) {
+    return "Zone 2";
+  } else if (palette_index === 3 ) {
+    return "Zone 3";
+  } else if (palette_index === 4 ) {
+    return "Zone 4";
+  } else if (palette_index === 5 ) {
+    return "Zone 5";
+  }}
 map.on("tileerror", function (err) {
   console.error("Tile failed to load", err.tile.src);
 });
@@ -21,12 +69,122 @@ L.Control.geocoder({
 }).addTo(map);
 
 // Popup on map click
+// var popup = L.popup();
+// map.on("click", function (e) {
+//   popup
+//     .setLatLng(e.latlng)
+//     .setContent("You clicked the map at " + e.latlng.toString())
+//     .openOn(map);
+// });
+
+const getFeatureInfo = async (latlng, layerName) => {
+  const buffer = 0.01;
+  
+
+    const bbox = [
+        latlng.lng - buffer, // minX
+        latlng.lat - buffer, // minY
+        latlng.lng + buffer, // maxX
+        latlng.lat + buffer, // maxY
+    ];
+
+    const bboxString = bbox.join(",");
+    const rootUrl = "http://localhost:8080/geoserver/wms?service=WMS&version=1.1.1&request=GetFeatureInfo";
+    const suffix = "&SRS=EPSG:4326&X=128&Y=128&WIDTH=256&HEIGHT=256&INFO_FORMAT=application/json";
+    const url = `${rootUrl}&layers=${layerName}&query_layers=${layerName}&BBOX=${bboxString}${suffix}`;
+    console.log(url);
+    const response = await fetch(url);
+    const data = await response.json();
+    // console.log(data);
+    const features = data.features.map((feature) => feature.properties);
+    if (features.length === 0) {
+      return null;
+    }else{
+      const content = features[0];
+      content.layerName = layerName;
+      console.log(content);
+      return content;
+    }
+    
+}
 var popup = L.popup();
-map.on("click", function (e) {
-  popup
-    .setLatLng(e.latlng)
-    .setContent("You clicked the map at " + e.latlng.toString())
-    .openOn(map);
+
+map.on("click", async function (e) {
+    // const buffer = 0.01;
+    // const clickLatLng = e.latlng;
+
+    // const bbox = [
+    //     clickLatLng.lng - buffer, // minX
+    //     clickLatLng.lat - buffer, // minY
+    //     clickLatLng.lng + buffer, // maxX
+    //     clickLatLng.lat + buffer, // maxY
+    // ];
+    // const bboxString = bbox.join(",");
+    // const rootUrl = "http://localhost:8080/geoserver/wms?service=WMS&version=1.1.1&request=GetFeatureInfo";
+    // const suffix = "&SRS=EPSG:4326&X=128&Y=128&WIDTH=256&HEIGHT=256&INFO_FORMAT=application/json";
+    // const query_layers = "ne:NOAA_SLR_7_0FT_RECLASS_AUG25,ne:ss_zones_aug21";
+    // const url = `${rootUrl}&layers=${query_layers}&query_layers=${query_layers}&BBOX=${bboxString}${suffix}`;
+    // console.log(url);
+    // const response = await fetch(url);
+    // const data = await response.json();
+    // console.log(data);
+    // const content = data.features.map((feature) => feature.properties);
+    // console.log(content);
+    // const content1ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25");
+    // const content2ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25");
+    // const content3ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_3_0FT_RECLASS_AUG25");
+    // const content4ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_4_0FT_RECLASS_AUG25");
+    // const content5ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_5_0FT_RECLASS_AUG25");
+    // const content6ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_6_0FT_RECLASS_AUG25");
+    // const content7ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25");
+    // const contentstormsurge = getFeatureInfo(e.latlng, "ne:ss_zones_aug21");
+    const [
+      content1ft, 
+      content2ft, 
+      content3ft,
+      content4ft,
+      content5ft,
+      content6ft,
+      content7ft,
+      contentstormsurge] = await Promise.all([
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_3_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_4_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_5_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_6_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25"),
+        getFeatureInfo(e.latlng, "ne:ss_zones_aug21")
+    ]);
+    const htmlText = `
+        You clicked the map at ${e.latlng.toString()}<br>
+        
+        <p>1Ft Flood Risk: ${
+            content1ft ? getRiskMessageFlood(content1ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>2Ft Flood Risk: ${
+            content2ft ? getRiskMessageFlood(content2ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>3Ft Flood Risk: ${
+            content3ft ? getRiskMessageFlood(content3ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>4Ft Flood Risk: ${
+            content4ft ? getRiskMessageFlood(content4ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>5Ft Flood Risk: ${
+            content5ft ? getRiskMessageFlood(content5ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>6Ft Flood Risk: ${
+            content6ft ? getRiskMessageFlood(content6ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>7Ft Flood Risk: ${
+            content7ft ? getRiskMessageFlood(content7ft.PALETTE_INDEX) : "No risk"
+        }</p>
+        <p>Storm Surge Risk: ${
+            contentstormsurge ? getRiskMessageStormSurge(contentstormsurge.PALETTE_INDEX) : "No risk"
+        }</p>
+        `;
+    popup.setLatLng(e.latlng).setContent(htmlText).openOn(map);
 });
 
 // Flood layers
@@ -84,22 +242,6 @@ const floodLayers = {
     }
   ),
 
-  test_7ft: L.tileLayer(
-    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_7_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
-    {
-      attribution: "FGDL 7 Foot Flood Layer",
-      minZoom: 1,
-      maxZoom: 20,
-    }
-  ),
-  test_6ft: L.tileLayer(
-    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_6_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
-    {
-      attribution: "FGDL 6 Foot Flood Layer",
-      minZoom: 1,
-      maxZoom: 20,
-    }
-  ),
 };
 
 // Labels layer
@@ -123,20 +265,29 @@ const countyLines = L.tileLayer(
 );
 
 const hundredyearFloodplain = L.tileLayer(
-  "http://127.0.0.1:5500/tiles/100yearFloodplain/{z}/{x}/{y}.png",
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:dfirm_100_dec24/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
   {
     attribution: "100yearFloodplain",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
   }
 );
 
 const fivehundredyearFloodplain = L.tileLayer(
-  "http://127.0.0.1:5500/tiles/500yearFloodplain/{z}/{x}/{y}.png",
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:dfirm_500_dec24/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
   {
     attribution: "500yearFloodplain",
     minZoom: 1,
-    maxZoom: 11,
+    maxZoom: 20,
+  }
+);
+
+const stormSurge = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:ss_zones_aug21/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+  {
+    attribution: "stormSurge",
+    minZoom: 1,
+    maxZoom: 20,
   }
 );
 
@@ -219,9 +370,16 @@ legend.onAdd = function () {
       <h4>Other Layers</h4>
       <div class="other-layers">
         <input type="checkbox" id="insuranceRates" /> <label for="insuranceRates">Insurance Rates</label><br>
-        <input type="checkbox" id="hazardZones" /> <label for="hazardZones">Hazard Zones</label><br>
+        <input type="checkbox" id="evacRoutes" /> <label for="evacRoutes">Evacuation Routes</label><br>
         <input type="checkbox" id="vulnerabilityIndex" /> <label for="vulnerabilityIndex">Vulnerability Index</label><br>
-        <input type="checkbox" id="parcels" /> <label for="parcels">Parcels</label><br>
+        <input type="checkbox" id="stormSurge" legend="stromlegend" /> <label for="stormSurge">Storm Surge</label>
+        <div class="flood-legend hidden" id="stromlegend">
+        <i style="background:#ee371f"></i> Zone 1<br>
+        <i style="background:#c3d444"></i> Zone 2<br>
+        <i style="background:#cb52bf"></i> Zone 3<br>
+        <i style="background:#28e23e"></i> Zone 4<br>
+        <i style="background:#7e73e5"></i> Zone 5<br>
+        </div><br>
         <input type="checkbox" id="countyLines" /> <label for="countyLines">County Lines</label><br>
         <input type="checkbox" id="hundredyearFloodplain" legend="100yearlegend" /> <label for="100yearFloodplain">100 Year Floodplain</label>
         <div class="flood-legend hidden" id="100yearlegend">
@@ -283,6 +441,20 @@ document.addEventListener("change", function (e) {
 });
 
 document.addEventListener("change", function (e) {
+  if (e.target.id === "stormSurge") {
+    const legendid = e.target.getAttribute("legend");
+    const legendelement = document.getElementById(legendid);
+    if (e.target.checked) {
+      map.addLayer(stormSurge);
+      legendelement.classList.remove("hidden");
+    } else {
+      map.removeLayer(stormSurge);
+      legendelement.classList.add("hidden");
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
   if (e.target.id === "fivehundredyearFloodplain") {
     const legendid = e.target.getAttribute("legend");
     const legendelement = document.getElementById(legendid);
@@ -294,4 +466,12 @@ document.addEventListener("change", function (e) {
       legendelement.classList.add("hidden");
     }
   }
+});
+
+// Sidebar toggle logic
+const sidebar = document.getElementById("mapInfo");
+const toggleBtn = document.getElementById("sidebarToggle");
+
+toggleBtn.addEventListener("click", () => {
+  sidebar.classList.toggle("open");
 });

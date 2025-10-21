@@ -7,10 +7,8 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
   <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -27,25 +25,28 @@
     <option value="5ft">5ft Flood Layer</option>
     <option value="6ft">6ft Flood Layer</option>
     <option value="7ft" selected>7ft Flood Layer</option>
-    <option value="geoserver" >geoserver test</option>
-    <option value="disputed" >dispute test</option>
-    <option value="test_7ft" >Geoserver 7 Foot</option>
-    <option value="test_6ft" >Geoserver 6 Foot</option>
+    <option value="geoserver">geoserver test</option>
+    <option value="disputed">dispute test</option>
   </select>
 
+  <!-- Map Container -->
   <div id="map"></div>
 
-  <!-- Info Section -->
-  <div id="mapInfo">
-    <p>This map shows areas in Florida potentially affected by a <strong>7-foot sea-level rise</strong>.</p>
+  <!-- Sidebar Toggle Button -->
+  <button id="sidebarToggle">ℹ️ Info</button>
+
+  <!-- Sliding Sidebar -->
+  <div id="mapInfo" class="sidebar">
+    <div class="sidebar-content">
+      <h3>Flood Layer Information</h3>
+      <p>This map shows areas in Florida potentially affected by a <strong>7-foot sea-level rise</strong>.</p>
+    </div>
   </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
   <!-- Leaflet Control Geocoder JS -->
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
   <!-- Custom JS -->
   <script src="map.js"></script>
 </body>
