@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Florida Flood Map</title>
+  <!-- Tutorial Popup -->
+
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,20 +14,24 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
+
+
 <body>
+  <button id="openModalBtn">Open Modal</button>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Tutorial</h2>
+            <p>Welcome! Use the dropdown to select flood layers, click on the map to see flood and storm surge info, and toggle other layers from the legend.</p>
+        </div>
+    </div>
   <h2>Florida Flood Map</h2>
 
   <!-- Dropdown Menu -->
   <label for="layerSelect" style="margin-left:10px;">Select Flood Layer:</label>
   <select id="layerSelect">
-    <option value="1ft">1ft Flood Layer</option>
-    <option value="2ft">2ft Flood Layer</option>
-    <option value="3ft">3ft Flood Layer</option>
-    <option value="4ft">4ft Flood Layer</option>
-    <option value="5ft">5ft Flood Layer</option>
-    <option value="6ft">6ft Flood Layer</option>
-    <option value="7ft" selected>7ft Flood Layer</option>
-    <option value="geoserver">geoserver test</option>
+    <option value="hazard">geoserver test</option>
     <option value="disputed">dispute test</option>
   </select>
 
@@ -49,5 +55,8 @@
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   <!-- Custom JS -->
   <script src="map.js"></script>
+
+  
+  </script>
 </body>
 </html>

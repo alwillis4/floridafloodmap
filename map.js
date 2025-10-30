@@ -1,6 +1,40 @@
 // Initialize the map and set view to Florida
 var map = L.map("map").setView([28.48, -81.4], 6);
 
+
+
+function getRiskMessageFloodHazard(properties) {
+  const zone = properties.FLD_ZONE || properties.zone || properties.flood_zone;
+
+  if (!zone) {
+    return "No data available";
+  }
+
+  // Normalize (handle lowercase, spaces, etc.)
+  const code = zone.toString().trim().toUpperCase();
+
+  switch (code) {
+    case "A":
+    case "AE":
+    case "AH":
+    case "AO":
+      return "High Flood Risk (100-year flood zone)";
+    case "VE":
+      return "Coastal High Hazard Area (100-year flood zone with waves)";
+    case "X":
+    case "ZONE X":
+      return "Minimal Flood Risk (outside 500-year floodplain)";
+    case "0.2 PCT":
+    case "0.2%":
+    case "500":
+      return "Moderate Flood Risk (500-year floodplain)";
+    case "D":
+      return "Possible but undetermined flood risk";
+    default:
+      return `Unrecognized Zone: ${code}`;
+  }
+}
+
 const getRiskMessageFlood = (palette_index) => {
   if (palette_index === 0) {
     return "No Risk";
@@ -49,9 +83,38 @@ const getRiskMessageStormSurge = (palette_index) => {
   } else if (palette_index === 5 ) {
     return "Zone 5";
   }}
+  const getRiskMessage500yearflood = (gray_index) => {
+  const value = Number(gray_index);
+
+  if (isNaN(value)) {
+    return "Error in data";
+  } else if (value === 0) {
+    return "No Risk";
+  } else if (value === 5) {
+    return "In 500 Year Floodplain";
+  } else {
+    return "Error in data";
+  }}
+  const getRiskMessage100yearflood = (gray_index) => {
+  const value = Number(gray_index);
+
+  if (isNaN(value)) {
+    return "Error in data";
+  } else if (value === 0) {
+    return "No Risk";
+  } else if (value === 1) {
+    return "In 100 Year Floodplain";
+  } else {
+    return "Error in data";
+  }
+};
+
+
 map.on("tileerror", function (err) {
   console.error("Tile failed to load", err.tile.src);
 });
+
+
 
 // Add OpenStreetMap tile layer
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -61,12 +124,62 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 // Add geocoder control to the map
-L.Control.geocoder({
-  defaultMarkGeocode: true,
+const geocoderControl = L.Control.geocoder({
+  defaultMarkGeocode: false, // don't auto-add a marker
   placeholder: "Search for location...",
   errorMessage: "Location not found.",
   showResultIcons: true,
 }).addTo(map);
+
+// Handle geocoder results
+geocoderControl.on("markgeocode", async function(e) {
+  const latlng = e.geocode.center;
+
+  // Optional: center map on the searched location
+  map.setView(latlng, 12);
+
+  // Use the same function as map click to get info from all layers
+  const [
+    content1ft, 
+    content2ft, 
+    content3ft,
+    content4ft,
+    content5ft,
+    content6ft,
+    content7ft,
+    contentstormsurge,
+    content100yearflood,
+    content500yearflood
+  ] = await Promise.all([
+    getFeatureInfo(latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_3_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_4_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_5_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_6_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:ss_zones_aug21"),
+    getFeatureInfo(latlng, "ne:dfirm_100_dec24"),
+    getFeatureInfo(latlng, "ne:dfirm_500_dec24")
+  ]);
+
+  mapInfo.innerHTML = `
+    <h3>Clicked location: ${latlng.toString()}</h3>
+    <p>1Ft Flood Risk: ${content1ft ? getRiskMessageFlood(content1ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>2Ft Flood Risk: ${content2ft ? getRiskMessageFlood(content2ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>3Ft Flood Risk: ${content3ft ? getRiskMessageFlood(content3ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>4Ft Flood Risk: ${content4ft ? getRiskMessageFlood(content4ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>5Ft Flood Risk: ${content5ft ? getRiskMessageFlood(content5ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>6Ft Flood Risk: ${content6ft ? getRiskMessageFlood(content6ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>7Ft Flood Risk: ${content7ft ? getRiskMessageFlood(content7ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>Storm Surge Risk: ${contentstormsurge ? getRiskMessageStormSurge(contentstormsurge.PALETTE_INDEX) : "No risk"}</p>
+    <p>100 Year Floodplain Risk: ${content100yearflood ? getRiskMessage100yearflood(content100yearflood.GRAY_INDEX) : "No risk"}</p>
+    <p>500 Year Floodplain Risk: ${content500yearflood ? getRiskMessage500yearflood(content500yearflood.GRAY_INDEX) : "No risk"}</p>
+  `;
+
+  // Opens Sideber at the searched location
+  sidebar.classList.add("open");
+});
 
 // Popup on map click
 // var popup = L.popup();
@@ -110,6 +223,8 @@ const getFeatureInfo = async (latlng, layerName) => {
 var popup = L.popup();
 
 map.on("click", async function (e) {
+  const latlng = e.latlng;
+  
     // const buffer = 0.01;
     // const clickLatLng = e.latlng;
 
@@ -138,77 +253,53 @@ map.on("click", async function (e) {
     // const content6ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_6_0FT_RECLASS_AUG25");
     // const content7ft = getFeatureInfo(e.latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25");
     // const contentstormsurge = getFeatureInfo(e.latlng, "ne:ss_zones_aug21");
-    const [
-      content1ft, 
-      content2ft, 
-      content3ft,
-      content4ft,
-      content5ft,
-      content6ft,
-      content7ft,
-      contentstormsurge] = await Promise.all([
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_3_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_4_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_5_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_6_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25"),
-        getFeatureInfo(e.latlng, "ne:ss_zones_aug21")
-    ]);
-    const htmlText = `
-        You clicked the map at ${e.latlng.toString()}<br>
-        
-        <p>1Ft Flood Risk: ${
-            content1ft ? getRiskMessageFlood(content1ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>2Ft Flood Risk: ${
-            content2ft ? getRiskMessageFlood(content2ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>3Ft Flood Risk: ${
-            content3ft ? getRiskMessageFlood(content3ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>4Ft Flood Risk: ${
-            content4ft ? getRiskMessageFlood(content4ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>5Ft Flood Risk: ${
-            content5ft ? getRiskMessageFlood(content5ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>6Ft Flood Risk: ${
-            content6ft ? getRiskMessageFlood(content6ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>7Ft Flood Risk: ${
-            content7ft ? getRiskMessageFlood(content7ft.PALETTE_INDEX) : "No risk"
-        }</p>
-        <p>Storm Surge Risk: ${
-            contentstormsurge ? getRiskMessageStormSurge(contentstormsurge.PALETTE_INDEX) : "No risk"
-        }</p>
-        `;
-    popup.setLatLng(e.latlng).setContent(htmlText).openOn(map);
+    // Fetch all flood and storm surge layers at clicked location
+  const [
+    content1ft, 
+    content2ft, 
+    content3ft,
+    content4ft,
+    content5ft,
+    content6ft,
+    content7ft,
+    contentstormsurge,
+    content100yearflood,
+    content500yearflood
+  ] = await Promise.all([
+    getFeatureInfo(latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_3_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_4_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_5_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_6_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25"),
+    getFeatureInfo(latlng, "ne:ss_zones_aug21"),
+    getFeatureInfo(latlng, "ne:dfirm_100_dec24"),
+    getFeatureInfo(latlng, "ne:dfirm_500_dec24")
+  ]);
+
+  // Populate sidebar with the results
+  mapInfo.innerHTML = `
+    <h3>Clicked location: ${latlng.toString()}</h3>
+    <p>1Ft Flood Risk: ${content1ft ? getRiskMessageFlood(content1ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>2Ft Flood Risk: ${content2ft ? getRiskMessageFlood(content2ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>3Ft Flood Risk: ${content3ft ? getRiskMessageFlood(content3ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>4Ft Flood Risk: ${content4ft ? getRiskMessageFlood(content4ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>5Ft Flood Risk: ${content5ft ? getRiskMessageFlood(content5ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>6Ft Flood Risk: ${content6ft ? getRiskMessageFlood(content6ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>7Ft Flood Risk: ${content7ft ? getRiskMessageFlood(content7ft.PALETTE_INDEX) : "No risk"}</p>
+    <p>Storm Surge Risk: ${contentstormsurge ? getRiskMessageStormSurge(contentstormsurge.PALETTE_INDEX) : "No risk"}</p>
+    <p>100 Year Floodplain Risk: ${content100yearflood ? getRiskMessage100yearflood(content100yearflood.GRAY_INDEX) : "No risk"}</p>
+    <p>500 Year Floodplain Risk: ${content500yearflood ? getRiskMessage500yearflood(content500yearflood.GRAY_INDEX) : "No risk"}</p>
+    `;
+
+  // Automatically open the sidebar
+  sidebar.classList.add("open");
 });
 
 // Flood layers
 const floodLayers = {
-  "1ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_1_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
-    attribution: "Flood 1ft",
-    minZoom: 1,
-    maxZoom: 20,
-  }),
-  "2ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_2_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
-    attribution: "Flood 2ft",
-    minZoom: 1,
-    maxZoom: 20,
-  }),
-  "3ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_3_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
-    attribution: "Flood 3ft",
-    minZoom: 1,
-    maxZoom: 20,
-  }),
-  "4ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_4_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
-    attribution: "Flood 4ft",
-    minZoom: 1,
-    maxZoom: 20,
-  }),
+
   "5ft": L.tileLayer("http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_5_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
     attribution: "Flood 5ft",
     minZoom: 1,
@@ -225,10 +316,10 @@ const floodLayers = {
     maxZoom: 20,
   }),
 
-  geoserver: L.tileLayer(
-    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:world/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+  hazard: L.tileLayer(
+    "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:dfirm_fldhaz_dec24/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
     {
-      attribution: "Geoserver",
+      attribution: "Hazard",
       minZoom: 1,
       maxZoom: 20,
     }
@@ -255,6 +346,14 @@ const labelsOnly = L.tileLayer(
 );
 
 // County Lines layer
+const evacRoutes = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:Evacuation_Routes_Hosted/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
+  {
+    attribution: "evacuationRoutes",
+    minZoom: 1,
+    maxZoom: 20,
+  }
+);
 const countyLines = L.tileLayer(
   "http://127.0.0.1:5500/tiles/CountyLine/{z}/{x}/{y}.png",
   {
@@ -291,10 +390,62 @@ const stormSurge = L.tileLayer(
   }
 );
 
+const oneFoot = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_1_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 1ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+
+const twoFeet = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_2_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 2ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+
+const threeFeet = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_3_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 3ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+
+const fourFeet = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_4_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 4ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+const fiveFeet = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_5_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 5ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+
+  const sixFeet = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_6_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 6ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+
+  const sevenFeet = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:NOAA_SLR_7_0FT_RECLASS_AUG25/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Flood 7ft",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+  const hazard = L.tileLayer(
+  "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:dfirm_fldhaz_dec24/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png", {
+    attribution: "Hazard",
+    minZoom: 1,
+    maxZoom: 20,
+  });
+
 // Initial setup
-let currentFloodLayer = floodLayers["7ft"];
-currentFloodLayer.addTo(map);
-labelsOnly.addTo(map);
+
 
 // Dropdown and info section
 const layerSelect = document.getElementById("layerSelect");
@@ -369,7 +520,14 @@ legend.onAdd = function () {
     <div id="layersTab" class="tab-content">
       <h4>Other Layers</h4>
       <div class="other-layers">
-        <input type="checkbox" id="insuranceRates" /> <label for="insuranceRates">Insurance Rates</label><br>
+        <input type="checkbox" id="oneFoot" /> <label for="oneFoot">1 Foot Flood</label><br>
+        <input type="checkbox" id="twoFeet" /> <label for="twoFeet">2 Feet Flood</label><br>
+        <input type="checkbox" id="threeFeet" /> <label for="threeFeet">3 Feet Flood</label><br>
+        <input type="checkbox" id="fourFeet" /> <label for="fourFeet">4 Feet Flood</label><br>
+        <input type="checkbox" id="fiveFeet" /> <label for="fiveFeet">5 Feet Flood</label><br>
+        <input type="checkbox" id="sixFeet" /> <label for="sixFeet">6 Feet Flood</label><br>
+        <input type="checkbox" id="sevenFeet" /> <label for="sevenFeet">7 Feet Flood</label><br>
+        <input type="checkbox" id="hazard" /> <label for="hazard">Hazard Zone</label><br>
         <input type="checkbox" id="evacRoutes" /> <label for="evacRoutes">Evacuation Routes</label><br>
         <input type="checkbox" id="vulnerabilityIndex" /> <label for="vulnerabilityIndex">Vulnerability Index</label><br>
         <input type="checkbox" id="stormSurge" legend="stromlegend" /> <label for="stormSurge">Storm Surge</label>
@@ -416,6 +574,97 @@ document.addEventListener("click", function (e) {
 });
 
 // Checkbox interactivity
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "hazard") {
+    if (e.target.checked) {
+      map.addLayer(hazard);
+    } else {
+      map.removeLayer(hazard);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "oneFoot") {
+    if (e.target.checked) {
+      map.addLayer(oneFoot);
+    } else {
+      map.removeLayer(oneFoot);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "twoFeet") {
+    if (e.target.checked) {
+      map.addLayer(twoFeet);
+    } else {
+      map.removeLayer(twoFeet);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "threeFeet") {
+    if (e.target.checked) {
+      map.addLayer(threeFeet);
+    } else {
+      map.removeLayer(threeFeet);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "fourFeet") {
+    if (e.target.checked) {
+      map.addLayer(fourFeet);
+    } else {
+      map.removeLayer(fourFeet);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "fiveFeet") {
+    if (e.target.checked) {
+      map.addLayer(fiveFeet);
+    } else {
+      map.removeLayer(fiveFeet);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "sixFeet") {
+    if (e.target.checked) {
+      map.addLayer(sixFeet);
+    } else {
+      map.removeLayer(sixFeet);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "sevenFeet") {
+    if (e.target.checked) {
+      map.addLayer(sevenFeet);
+    } else {
+      map.removeLayer(sevenFeet);
+    }
+  }
+});
+
+document.addEventListener("change", function (e) {
+  if (e.target.id === "evacRoutes") {
+    if (e.target.checked) {
+      map.addLayer(evacRoutes);
+    } else {
+      map.removeLayer(evacRoutes);
+    }
+  }
+});
+
 document.addEventListener("change", function (e) {
   if (e.target.id === "countyLines") {
     if (e.target.checked) {
@@ -468,6 +717,41 @@ document.addEventListener("change", function (e) {
   }
 });
 
+// document.addEventListener("change", function (e) {
+//   if (e.target.id === "fivehundredyearFloodplain") {
+//     const legendid = e.target.getAttribute("legend");
+//     const legendelement = document.getElementById(legendid);
+    
+//     // Reference to your info slide-out element
+//     const infoPanel = document.getElementById("500yearFloodplain"); 
+//     // Create or select a container for the floodplain description
+//     let floodplainDescription = document.getElementById("floodplain-description");
+
+//     if (e.target.checked) {
+//       map.addLayer(fivehundredyearFloodplain);
+//       legendelement.classList.remove("hidden");
+
+//       // If no description element exists yet, create it
+//       if (!floodplainDescription) {
+//         floodplainDescription = document.createElement("p");
+//         floodplainDescription.id = "floodplain-description";
+//         floodplainDescription.textContent =
+//           "The 500 year Floodplain is a map that displays the area of land covered in water for a 500 year storm — meaning a storm that has a 0.2 percent chance of occurring every year. So it’s often called a ‘1 in 500 year’ storm, though that’s not entirely accurate — it describes a major storm that could happen any year but has a very low probability of occurring.";
+//         infoPanel.appendChild(floodplainDescription);
+//       }
+
+//     } else {
+//       map.removeLayer(fivehundredyearFloodplain);
+//       legendelement.classList.add("hidden");
+
+//       // Remove the description when unchecked
+//       if (floodplainDescription) {
+//         floodplainDescription.remove();
+//       }
+//     }
+//   }
+// });
+
 // Sidebar toggle logic
 const sidebar = document.getElementById("mapInfo");
 const toggleBtn = document.getElementById("sidebarToggle");
@@ -475,3 +759,35 @@ const toggleBtn = document.getElementById("sidebarToggle");
 toggleBtn.addEventListener("click", () => {
   sidebar.classList.toggle("open");
 });
+
+// Tutorial popup logic
+const tutorialPopup = document.getElementById("tutorialPopup");
+const closeTutorialBtn = document.getElementById("closeTutorial");
+
+// Show tutorial on page load
+window.addEventListener("load", () => {
+  tutorialPopup.classList.remove("hidden");
+});
+
+// Close tutorial on button click
+const modal = document.getElementById("myModal");
+    const openBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.querySelector(".close-button");
+
+    openBtn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    closeBtn.onclick = function() {
+        modal.style.display = "Hi";
+    }
+
+    // Close the modal if the user clicks outside of the modal content
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+
+
