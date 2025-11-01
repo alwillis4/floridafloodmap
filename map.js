@@ -3,38 +3,6 @@ var map = L.map("map").setView([28.48, -81.4], 6);
 
 
 
-function getRiskMessageFloodHazard(properties) {
-  const zone = properties.FLD_ZONE || properties.zone || properties.flood_zone;
-
-  if (!zone) {
-    return "No data available";
-  }
-
-  // Normalize (handle lowercase, spaces, etc.)
-  const code = zone.toString().trim().toUpperCase();
-
-  switch (code) {
-    case "A":
-    case "AE":
-    case "AH":
-    case "AO":
-      return "High Flood Risk (100-year flood zone)";
-    case "VE":
-      return "Coastal High Hazard Area (100-year flood zone with waves)";
-    case "X":
-    case "ZONE X":
-      return "Minimal Flood Risk (outside 500-year floodplain)";
-    case "0.2 PCT":
-    case "0.2%":
-    case "500":
-      return "Moderate Flood Risk (500-year floodplain)";
-    case "D":
-      return "Possible but undetermined flood risk";
-    default:
-      return `Unrecognized Zone: ${code}`;
-  }
-}
-
 const getRiskMessageFlood = (palette_index) => {
   if (palette_index === 0) {
     return "No Risk";
@@ -114,11 +82,11 @@ map.on("tileerror", function (err) {
   console.error("Tile failed to load", err.tile.src);
 });
 
-
+// "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 // Add OpenStreetMap tile layer
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
+L.tileLayer("https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png", {
+  maxZoom: 20,
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
@@ -149,7 +117,8 @@ geocoderControl.on("markgeocode", async function(e) {
     content7ft,
     contentstormsurge,
     content100yearflood,
-    content500yearflood
+    content500yearflood,
+    contentHazard
   ] = await Promise.all([
     getFeatureInfo(latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25"),
     getFeatureInfo(latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25"),
@@ -160,7 +129,8 @@ geocoderControl.on("markgeocode", async function(e) {
     getFeatureInfo(latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25"),
     getFeatureInfo(latlng, "ne:ss_zones_aug21"),
     getFeatureInfo(latlng, "ne:dfirm_100_dec24"),
-    getFeatureInfo(latlng, "ne:dfirm_500_dec24")
+    getFeatureInfo(latlng, "ne:dfirm_500_dec24"),
+    getFeatureInfo(latlng, "ne:dfirm_fldhaz_dec24"),
   ]);
 
   mapInfo.innerHTML = `
@@ -175,6 +145,7 @@ geocoderControl.on("markgeocode", async function(e) {
     <p>Storm Surge Risk: ${contentstormsurge ? getRiskMessageStormSurge(contentstormsurge.PALETTE_INDEX) : "No risk"}</p>
     <p>100 Year Floodplain Risk: ${content100yearflood ? getRiskMessage100yearflood(content100yearflood.GRAY_INDEX) : "No risk"}</p>
     <p>500 Year Floodplain Risk: ${content500yearflood ? getRiskMessage500yearflood(content500yearflood.GRAY_INDEX) : "No risk"}</p>
+    <p>Hazard Risk: ${contentHazard.FLD_ZONE}</p>
   `;
 
   // Opens Sideber at the searched location
@@ -264,7 +235,8 @@ map.on("click", async function (e) {
     content7ft,
     contentstormsurge,
     content100yearflood,
-    content500yearflood
+    content500yearflood,
+    contentHazard
   ] = await Promise.all([
     getFeatureInfo(latlng, "ne:NOAA_SLR_1_0FT_RECLASS_AUG25"),
     getFeatureInfo(latlng, "ne:NOAA_SLR_2_0FT_RECLASS_AUG25"),
@@ -275,7 +247,8 @@ map.on("click", async function (e) {
     getFeatureInfo(latlng, "ne:NOAA_SLR_7_0FT_RECLASS_AUG25"),
     getFeatureInfo(latlng, "ne:ss_zones_aug21"),
     getFeatureInfo(latlng, "ne:dfirm_100_dec24"),
-    getFeatureInfo(latlng, "ne:dfirm_500_dec24")
+    getFeatureInfo(latlng, "ne:dfirm_500_dec24"),
+    getFeatureInfo(latlng, "ne:dfirm_fldhaz_dec24"),
   ]);
 
   // Populate sidebar with the results
@@ -291,6 +264,7 @@ map.on("click", async function (e) {
     <p>Storm Surge Risk: ${contentstormsurge ? getRiskMessageStormSurge(contentstormsurge.PALETTE_INDEX) : "No risk"}</p>
     <p>100 Year Floodplain Risk: ${content100yearflood ? getRiskMessage100yearflood(content100yearflood.GRAY_INDEX) : "No risk"}</p>
     <p>500 Year Floodplain Risk: ${content500yearflood ? getRiskMessage500yearflood(content500yearflood.GRAY_INDEX) : "No risk"}</p>
+    <p>Hazard Risk: ${contentHazard.FLD_ZONE}</p>
     `;
 
   // Automatically open the sidebar
@@ -691,17 +665,55 @@ document.addEventListener("change", function (e) {
 
 document.addEventListener("change", function (e) {
   if (e.target.id === "stormSurge") {
-    const legendid = e.target.getAttribute("legend");
-    const legendelement = document.getElementById(legendid);
-    if (e.target.checked) {
+    const checkbox = e.target;
+    const legendId = checkbox.getAttribute("legend");
+    const legendEl = document.getElementById(legendId);
+    const label = document.querySelector('label[for="stormSurge"]');
+    let arrow = label.querySelector(".arrow");
+
+    // Create the arrow only once
+    if (!arrow) {
+      arrow = document.createElement("span");
+      arrow.classList.add("arrow");
+      arrow.textContent = "►";
+      label.appendChild(arrow);
+    }
+
+    if (checkbox.checked) {
+      // Add layer to map
       map.addLayer(stormSurge);
-      legendelement.classList.remove("hidden");
+
+      // Show arrow when checked
+      arrow.style.display = "inline-block";
+
+      // Add click event for dropdown toggle
+      arrow.onclick = function () {
+        const isVisible = legendEl.classList.contains("show");
+
+        if (isVisible) {
+          legendEl.classList.remove("show");
+          label.classList.remove("open");
+          setTimeout(() => legendEl.classList.add("hidden"), 300);
+        } else {
+          legendEl.classList.remove("hidden");
+          legendEl.classList.add("show");
+          label.classList.add("open");
+        }
+      };
     } else {
+      // Remove layer from map
       map.removeLayer(stormSurge);
-      legendelement.classList.add("hidden");
+
+      // Hide legend and arrow when unchecked
+      legendEl.classList.remove("show");
+      legendEl.classList.add("hidden");
+      label.classList.remove("open");
+      arrow.style.display = "none";
     }
   }
 });
+
+
 
 document.addEventListener("change", function (e) {
   if (e.target.id === "fivehundredyearFloodplain") {
@@ -765,9 +777,9 @@ const tutorialPopup = document.getElementById("tutorialPopup");
 const closeTutorialBtn = document.getElementById("closeTutorial");
 
 // Show tutorial on page load
-window.addEventListener("load", () => {
-  tutorialPopup.classList.remove("hidden");
-});
+// window.addEventListener("load", () => {
+//   tutorialPopup.classList.remove("hidden");
+// });
 
 // Close tutorial on button click
 const modal = document.getElementById("myModal");
@@ -779,7 +791,7 @@ const modal = document.getElementById("myModal");
     }
 
     closeBtn.onclick = function() {
-        modal.style.display = "Hi";
+        modal.style.display = "none";
     }
 
     // Close the modal if the user clicks outside of the modal content
