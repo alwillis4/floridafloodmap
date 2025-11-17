@@ -31,15 +31,20 @@
     </div>
   <h2>Florida Flood Map</h2>
 
-  <!-- Dropdown Menu -->
-  <label for="layerSelect" style="margin-left:10px;">Select Flood Layer:</label>
-  <select id="layerSelect">
-    <option value="hazard">geoserver test</option>
-    <option value="disputed">dispute test</option>
-  </select>
 
-  <!-- Map Container -->
-  <div id="map"></div>
+
+
+  <!-- Map + Info Panel Container -->
+<div id="container" style="display: flex; height: 80vh;">
+  <!-- Map -->
+  <div id="map" style="width: 70%; height: 100%;"></div>
+
+  <!-- Info Panel -->
+  <div id="infoPanel" style="width: 30%; padding: 10px; overflow-y: auto; background: #f7f7f7;">
+    <h3>Map Information</h3>
+    <p id="infoText">Click a location on the map to see data here.</p>
+  </div>
+</div>
 
   <!-- Sidebar Toggle Button -->
   <button id="sidebarToggle">ℹ️ Info</button>
