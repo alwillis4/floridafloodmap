@@ -103,18 +103,19 @@ const getRiskMessageHazard = (fld_zone) => {
 
   switch (zone) {
     case "A":
+      return "High Flood Risk exact flood levels unknown. insurance required";
     case "AE":
+      return "High Flood Risk exact flood levels known, insurance required";
     case "AH":
+      return "High Flood Risk exact flood levels around 1 to 3 feet, insurance required";
     case "AO":
-    case "AR":
-      return "High Flood Risk (100-year Flood Zone)";
-    case "V":
+      return "High Flood Risk exact flood levels around 1 to 3 feet around sloped areas, insurance required";
     case "VE":
-      return "Coastal High Flood Risk Zone";
+      return "High Flood Risk in costal areas. Often above 6 feet in flooding in thoes areas, insurance required";
     case "X":
-      return "Moderate or Minimal Flood Risk (Outside 100-year Floodplain)";
+      return "Moderate or Minimal Flood Risk, insurance is not required for this area";
     case "D":
-      return "Undetermined Flood Risk (Data Not Available)";
+      return "Undetermined Flood Risk (Data Not Available) no insurance required for this area.";
     default:
       return "Error in data";
   }
