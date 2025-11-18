@@ -118,7 +118,7 @@ h2 {
 .sidebar {
   position: fixed;
   top: 0;
-  right: -320px; /* Hidden by default */
+  right: -320px; 
   width: 300px;
   height: 100%;
   background: white;
@@ -131,7 +131,7 @@ h2 {
 }
 
 .sidebar.open {
-  right: 0; /* Slide in */
+  right: 0; 
 }
 
 .sidebar-content h3 {
@@ -139,22 +139,21 @@ h2 {
   color: #007bff;
 }
 
-
 .modal {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 9999; /* Sit on top */
+        display: none; 
+        position: fixed; 
+        z-index: 9999; 
         left: 0;
         top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.4); 
     }
 
 
     #modal-container {
-      position: fixed; /* Positions the element relative to the viewport */
+      position: fixed; 
       top: 0;
       left: 0;
       width: 100%;
@@ -162,16 +161,16 @@ h2 {
       display: flex;
       justify-content: center;
       align-items: center;
-      z-index: 9999; /* Ensures it is on top of other content */
+      z-index: 9999; 
     }
 
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto; /* 15% from the top and centered */
+        margin: 15% auto; 
         padding: 20px;
         border: 1px solid #888;
-        width: 80%; /* Could be more or less, depending on screen size */
-        z-index: 9999; /* Ensures it is on top of other content */
+        width: 80%; 
+        z-index: 9999; 
     }
 
     .close-button {
@@ -231,5 +230,5 @@ label[for="stormSurge"].open .arrow {
 #stromlegend.show {
   display: block;
   opacity: 1;
-  max-height: 300px; /* enough to fit legend */
+  max-height: 300px; 
 }

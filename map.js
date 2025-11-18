@@ -38,29 +38,44 @@ async function queryFeatureServer(latlng) {
     getFeatureInfo(latlng, "ne:dfirm_fldhaz_dec24"),
   ]);
 
-  // Define popupContent BEFORE using it
   const popupContent = `
-    <h3>Clicked location: ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}</h3>
+    <h3>Clicked location: ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(
+    4
+  )}</h3>
     <p><strong>1Ft Flood Risk:</strong> ${
-      content1ft ? getRiskMessageFlood(content1ft.PALETTE_INDEX) : "No data available"
+      content1ft
+        ? getRiskMessageFlood(content1ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>2Ft Flood Risk:</strong> ${
-      content2ft ? getRiskMessageFlood(content2ft.PALETTE_INDEX) : "No data available"
+      content2ft
+        ? getRiskMessageFlood(content2ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>3Ft Flood Risk:</strong> ${
-      content3ft ? getRiskMessageFlood(content3ft.PALETTE_INDEX) : "No data available"
+      content3ft
+        ? getRiskMessageFlood(content3ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>4Ft Flood Risk:</strong> ${
-      content4ft ? getRiskMessageFlood(content4ft.PALETTE_INDEX) : "No data available"
+      content4ft
+        ? getRiskMessageFlood(content4ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>5Ft Flood Risk:</strong> ${
-      content5ft ? getRiskMessageFlood(content5ft.PALETTE_INDEX) : "No data available"
+      content5ft
+        ? getRiskMessageFlood(content5ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>6Ft Flood Risk:</strong> ${
-      content6ft ? getRiskMessageFlood(content6ft.PALETTE_INDEX) : "No data available"
+      content6ft
+        ? getRiskMessageFlood(content6ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>7Ft Flood Risk:</strong> ${
-      content7ft ? getRiskMessageFlood(content7ft.PALETTE_INDEX) : "No data available"
+      content7ft
+        ? getRiskMessageFlood(content7ft.PALETTE_INDEX)
+        : "No data available"
     }</p>
     <p><strong>Storm Surge Risk:</strong> ${
       contentstormsurge
@@ -78,44 +93,41 @@ async function queryFeatureServer(latlng) {
         : "No data available"
     }</p>
     <p><strong>Hazard Zone:</strong> ${
-      contentHazard ? getRiskMessageHazard(contentHazard.FLD_ZONE) : "No data available"
+      contentHazard
+        ? getRiskMessageHazard(contentHazard.FLD_ZONE)
+        : "No data available"
     }</p>
   `;
 
-  // after building popupContent
-if (!popupContent || popupContent.trim() === "") {
-  popupContent = "<p>No data available</p>";
+  if (!popupContent || popupContent.trim() === "") {
+    popupContent = "<p>No data available</p>";
+  }
+
+  document.getElementById("infoText").innerHTML = popupContent;
 }
-
-// Show in right panel instead of Leaflet popup
-document.getElementById("infoText").innerHTML = popupContent;
-}
-
-
 
 const getRiskMessageHazard = (fld_zone) => {
   if (!fld_zone) {
     return "No data available";
   }
 
-  // Normalize field (remove spaces and make uppercase)
   const zone = fld_zone.toString().trim().toUpperCase();
 
   switch (zone) {
     case "A":
-      return "High Flood Risk exact flood levels unknown. insurance required";
+      return "High Flood Risk exact flood levels unknown. insurance required if house is under federal backed or insured mortgage.";
     case "AE":
-      return "High Flood Risk exact flood levels known, insurance required";
+      return "High Flood Risk exact flood levels known, insurance required if house is under federal backed or insured mortgage.";
     case "AH":
-      return "High Flood Risk exact flood levels around 1 to 3 feet, insurance required";
+      return "High Flood Risk exact flood levels around 1 to 3 feet, insurance required if house is under federal backed or insured mortgage.";
     case "AO":
-      return "High Flood Risk exact flood levels around 1 to 3 feet around sloped areas, insurance required";
+      return "High Flood Risk exact flood levels around 1 to 3 feet around sloped areas, insurance required if house is under federal backed or insured mortgage.";
     case "VE":
-      return "High Flood Risk in costal areas. Often above 6 feet in flooding in thoes areas, insurance required";
+      return "High Flood Risk in costal areas. Often above 6 feet in flooding in thoes areas, insurance required if house is under federal backed or insured mortgage.";
     case "X":
       return "Moderate or Minimal Flood Risk, insurance is not required for this area";
     case "D":
-      return "Undetermined Flood Risk (Data Not Available) no insurance required for this area.";
+      return "Undetermined Flood Risk (Data Not Available at this time) no insurance required for this area.";
     default:
       return "Error in data";
   }
@@ -214,27 +226,22 @@ L.tileLayer(
   }
 ).addTo(map);
 
-// Add geocoder control to the map
+// geocoder control to the map
 const geocoderControl = L.Control.geocoder({
-  defaultMarkGeocode: false, // don't auto-add a marker
+  defaultMarkGeocode: false,
   placeholder: "Search for location...",
   errorMessage: "Location not found.",
   showResultIcons: true,
 }).addTo(map);
 
-// Handle geocoder results
 geocoderControl.on("markgeocode", async function (e) {
   const latlng = e.geocode.center;
 
-  // Optional: center map on the searched location
+  // center map on the searched location
   map.setView(latlng, 12);
   placeMarker(latlng);
   queryFeatureServer(latlng);
-
-  
 });
-
-
 
 const getFeatureInfo = async (latlng, layerName) => {
   const buffer = 0.01;
@@ -332,7 +339,6 @@ const floodLayers = {
   ),
 };
 
-// Labels layer
 const labelsOnly = L.tileLayer(
   "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
   {
@@ -342,7 +348,6 @@ const labelsOnly = L.tileLayer(
   }
 );
 
-// County Lines layer
 const evacRoutes = L.tileLayer(
   "http://localhost:8080/geoserver/gwc/service/wmts/rest/ne:Evacuation_Routes_Hosted/EPSG:900913/EPSG:900913:{z}/{y}/{x}?format=image/png",
   {
@@ -457,8 +462,7 @@ const hazard = L.tileLayer(
   }
 );
 
-
-// Legend with tabs
+// Legend
 var legend = L.control({ position: "bottomright" });
 
 legend.onAdd = function () {
@@ -466,11 +470,11 @@ legend.onAdd = function () {
 
   div.innerHTML = `
     <div class="tab-header">
-      <button class="tab-button" data-tab="layersTab">Other Layers</button>
+      <button class="tab-button" data-tab="layersTab">Layers</button>
     </div>
 
     <div id="layersTab" class="tab-content">
-      <h4>Other Layers</h4>
+      <h4>Layers</h4>
       <div class="other-layers">
         <input type="checkbox" id="oneFoot" /> <label for="oneFoot">1 Foot Flood</label> <button class="info-btn" data-layer="oneFoot">ℹ️</button><br>
         <input type="checkbox" id="twoFeet" /> <label for="twoFeet">2 Foot Flood</label> <button class="info-btn" data-layer="twoFeet">ℹ️</button><br>
@@ -480,25 +484,9 @@ legend.onAdd = function () {
         <input type="checkbox" id="sixFeet" /> <label for="sixFeet">6 Foot Flood</label><button class="info-btn" data-layer="sixFeet">ℹ️</button><br>
         <input type="checkbox" id="sevenFeet" /> <label for="sevenFeet">7 Foot Flood</label><button class="info-btn" data-layer="sevenFeet">ℹ️</button><br>
         <input type="checkbox" id="hazard" legend="hazardlegend"/> <label for="hazard">Hazard Zone</label><button class="info-btn" data-layer="hazard">ℹ️</button><br>
-        <div class="flood-legend hidden" id="hazardlegend">
-        <i style="background:#e85b3b"></i> Zone A<br>
-        <i style="background:#e85b3b"></i> Zone AE<br>
-        <i style="background:#fec980"></i> Zone AH<br>
-        <i style="background:#7e73e5"></i> Zone AO<br>
-        <i style="background:#c7e8ad"></i> Zone D<br>
-        <i style="background:#64abb0"></i> Zone VE<br>
-        <i style="background:#2b83ba"></i> Zone X<br>
-        </div>
         <input type="checkbox" id="evacRoutes" /> <label for="evacRoutes">Evacuation Routes</label><br>
-        
         <input type="checkbox" id="stormSurge" legend="stromlegend" /> <label for="stormSurge">Storm Surge</label> <button class="info-btn" data-layer="stormSurge">ℹ️</button>
-        // <div class="flood-legend hidden" id="stromlegend">
-        // <i style="background:#ee371f"></i> Zone 1<br>
-        // <i style="background:#c3d444"></i> Zone 2<br>
-        // <i style="background:#cb52bf"></i> Zone 3<br>
-        // <i style="background:#28e23e"></i> Zone 4<br>
-        // <i style="background:#7e73e5"></i> Zone 5<br>
-        // </div><br>
+        <br>
         <input type="checkbox" id="countyLines" /> <label for="countyLines">County Lines</label><br>
         <input type="checkbox" id="hundredyearFloodplain" legend="100yearlegend" /> <label for="100yearFloodplain">100 Year Floodplain</label> <button class="info-btn" data-layer="hundredyearFloodplain">ℹ️</button>
         <div class="flood-legend hidden" id="100yearlegend">
@@ -540,18 +528,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("hazard");
   const label = document.querySelector('label[for="hazard"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -580,9 +565,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -598,9 +582,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(hazard);
     } else {
@@ -609,23 +592,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("oneFoot");
   const label = document.querySelector('label[for="oneFoot"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
-
-  // Insert arrow right after the label (not inside)
+  arrow.style.userSelect = "none";
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -662,9 +640,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -680,9 +657,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(oneFoot);
     } else {
@@ -695,18 +671,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("twoFeet");
   const label = document.querySelector('label[for="twoFeet"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -743,9 +716,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -761,9 +733,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(twoFeet);
     } else {
@@ -776,18 +747,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("threeFeet");
   const label = document.querySelector('label[for="threeFeet"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -824,9 +792,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -842,9 +809,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(threeFeet);
     } else {
@@ -857,18 +823,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("fourFeet");
   const label = document.querySelector('label[for="fourFeet"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -905,9 +868,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -923,9 +885,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(fourFeet);
     } else {
@@ -938,18 +899,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("fiveFeet");
   const label = document.querySelector('label[for="fiveFeet"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -986,9 +944,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -1004,9 +961,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(fiveFeet);
     } else {
@@ -1019,18 +975,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("sixFeet");
   const label = document.querySelector('label[for="sixFeet"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
-
-  // Insert arrow right after the label (not inside)
+  arrow.style.userSelect = "none";
   label.insertAdjacentElement("afterend", arrow);
-
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -1067,9 +1018,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -1085,9 +1035,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(sixFeet);
     } else {
@@ -1100,18 +1049,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("sevenFeet");
   const label = document.querySelector('label[for="sevenFeet"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -1148,9 +1094,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -1166,9 +1111,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(sevenFeet);
     } else {
@@ -1201,18 +1145,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("stormSurge");
   const label = document.querySelector('label[for="stormSurge"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
@@ -1239,9 +1180,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -1257,9 +1197,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(stormSurge);
     } else {
@@ -1272,27 +1211,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("hundredyearFloodplain");
   const label = document.querySelector('label[for="100yearFloodplain"]');
 
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
+  arrow.style.userSelect = "none";
 
-  // Insert arrow right after the label (not inside)
   label.insertAdjacentElement("afterend", arrow);
 
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
   legendEl.style.marginLeft = "22px";
 
-  // Only one color category for the 100-year floodplain
-  const zones = [
-    { color: "#5bd75b", name: "In 100-Year Floodplain" }
-  ];
+  const zones = [{ color: "#5bd75b", name: "In 100-Year Floodplain" }];
 
   zones.forEach((zone) => {
     const item = document.createElement("div");
@@ -1307,9 +1240,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -1325,9 +1257,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(hundredyearFloodplain);
     } else {
@@ -1339,28 +1270,18 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("fivehundredyearFloodplain");
   const label = document.querySelector('label[for="500yearFloodplain"]');
-
-  // --- Create a separate arrow element (not inside the label) ---
   const arrow = document.createElement("span");
   arrow.classList.add("arrow");
   arrow.textContent = "►";
   arrow.style.cursor = "pointer";
   arrow.style.marginLeft = "8px";
-  arrow.style.userSelect = "none"; // prevent accidental text selection
-
-  // Insert arrow right after the label (not inside)
+  arrow.style.userSelect = "none";
   label.insertAdjacentElement("afterend", arrow);
-
-  // --- Create the legend dynamically ---
   const legendEl = document.createElement("div");
   legendEl.classList.add("flood-legend", "hidden");
   legendEl.style.marginTop = "4px";
   legendEl.style.marginLeft = "22px";
-
-  // Only one color category for the 100-year floodplain
-  const zones = [
-    { color: "#993399", name: "In 500-Year Floodplain" }
-  ];
+  const zones = [{ color: "#993399", name: "In 500-Year Floodplain" }];
 
   zones.forEach((zone) => {
     const item = document.createElement("div");
@@ -1375,9 +1296,8 @@ document.addEventListener("DOMContentLoaded", () => {
     legendEl.appendChild(item);
   });
 
-  // --- Arrow click toggles legend (independent from checkbox) ---
   arrow.addEventListener("click", (e) => {
-    e.stopPropagation(); // ensure no interference with checkbox
+    e.stopPropagation();
     const isVisible = legendEl.classList.contains("show");
 
     if (isVisible) {
@@ -1393,9 +1313,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Checkbox click controls only the map layer ---
   checkbox.addEventListener("click", (e) => {
-    e.stopPropagation(); // make sure arrow doesn't get triggered
+    e.stopPropagation();
     if (checkbox.checked) {
       map.addLayer(fivehundredyearFloodplain);
     } else {
@@ -1407,54 +1326,55 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const infoButtons = document.querySelectorAll(".info-btn");
 
-  // Define info text for each layer
+  // text for each layer
   const layerInfo = {
-    oneFoot: "The 1 foot flood inundation depth map is used to show a projected 1 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 1 foot storm surge can happen whenever a strong storm makes landfall in the state.",
-    twoFeet: "The 2 feet flood inundation depth map is used to show a projected 2 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 2 feet storm surge can happen whenever a strong storm makes landfall and can occur yearly all year round.",
-    threeFeet: "The 3 feet flood inundation depth map is used to show a projected 3 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 3 feet storm surge can happen whenever a strong storm makes landfall and can occur yearly all year round.",
-    fourFeet: "The 4 feet flood inundation depth map is used to show a projected 4 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 4 feet storm surge is less likely to occur and occur during tropical storm and categories 1 and 2 hurricanes.",
-    fiveFeet: "The 5 feet flood inundation depth map is used to show a projected 5 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 5 feet storm surge is less likely to occur and can occur during stronger tropical storms and category 1 and 2 hurricanes.",
-    sixFeet: "The 6 feet flood inundation (also known as flooding) depth map is used to show a projected 6 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 6 feet storm surge is less likely to occur and occur during tropical storm and categories 1 and 2 hurricanes",
-    sevenFeet: "The 7 feet flood inundation depth map is used to show a projected 7 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 7 feet storm surge is less likely to occur and occur in categories 3 and above hurricanes. These major hurricanes can occur in about three to five years in the state.",
-    hazard: "The Hazard Map shows FEMA flood zones that describe different levels and types of flood risk and which areas require insurance. Zones A and AE represent high-risk areas that face a 1% annual chance of flooding (the “100-year flood”), with AE having detailed elevation data and A lacking it. Zones AH and AO also have high flood risk but involve shallow flooding—AH is for ponding 1–3 feet deep, while AO is for shallow sheet flow moving downhill. Zone VE is a coastal high-risk area where storm surge and waves over 3 feet can cause severe damage. Zone D means the flood risk is unknown because FEMA has not completed a study there. Finally, Zone X indicates lower risk for flooding. Flood insurance is required in Zones A, AE, AH, AO, and VE, but not in Zones D or X.",
-    stormSurge: "The Storm Surge map identifies areas that could be inundated by storm-driven coastal flooding during hurricanes or tropical storms.",
-    hundredyearFloodplain: "The 100 year Floodplain is a map that displays the the area of land covered in water for a 100 year storm meaning a storm that has a 1 percent chance of occurring every year so a a storm that could happen 1 in 100 years though is is not entirely accurate saying this a major storm that occur every year but has a very low chance of occurring. It is mainly used for long term planning and risk assessment or areas across the state.",
-    fivehundredyearFloodplain: "The 500 year Floodplain is a map that displays the the area of land covered in water for a 500 year storm meaning a storm that has a 0.2 percent chance of occurring every year so a a storm that could happen 1 in 500 years though is is not entirely accurate saying this a major storm that can occur every year but has a very low chance of occurring.",
-    evacRoutes: "The Evacuation Routes layer shows major routes used for safe evacuation during flood emergencies.",
-    countyLines: "The County Lines layer outlines county boundaries across Florida for geographic context."
+    oneFoot:
+      "The 1 foot flood inundation depth map is used to show a projected 1 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 1 foot storm surge can happen whenever a strong storm makes landfall in the state.",
+    twoFeet:
+      "The 2 feet flood inundation depth map is used to show a projected 2 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 2 feet storm surge can happen whenever a strong storm makes landfall and can occur yearly all year round.",
+    threeFeet:
+      "The 3 feet flood inundation depth map is used to show a projected 3 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 3 feet storm surge can happen whenever a strong storm makes landfall and can occur yearly all year round.",
+    fourFeet:
+      "The 4 feet flood inundation depth map is used to show a projected 4 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 4 feet storm surge is less likely to occur and occur during tropical storm and categories 1 and 2 hurricanes.",
+    fiveFeet:
+      "The 5 feet flood inundation depth map is used to show a projected 5 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 5 feet storm surge is less likely to occur and can occur during stronger tropical storms and category 1 and 2 hurricanes.",
+    sixFeet:
+      "The 6 feet flood inundation (also known as flooding) depth map is used to show a projected 6 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 6 feet storm surge is less likely to occur and occur during tropical storm and categories 1 and 2 hurricanes",
+    sevenFeet:
+      "The 7 feet flood inundation depth map is used to show a projected 7 foot rise in sea level be it natural rise, global warming, from storm surge, or major weather events. And the depths represent how deep the water reaches in terms of feet in a given area. Dealing with a rise of water level by a foot can occur fairly common in Florida. 7 feet storm surge is less likely to occur and occur in categories 3 and above hurricanes. These major hurricanes can occur in about three to five years in the state.",
+    hazard:
+      "The Hazard Map shows FEMA flood zones that describe different levels and types of flood risk and which areas require insurance. Zones A and AE represent high-risk areas that face with AE having detailed elevation data and A lacking it. Zones AH and AO also have high flood risk but involve shallow flooding—AH is for flood risk about 1–3 feet deep, while AO is for shallow sheet flow moving downhill. Zone VE is a coastal high-risk area where storm surge and waves over 6 feet can cause severe damage. Zone D means the flood risk is unknown because FEMA has not completed a study there. Finally, Zone X indicates lower risk for flooding. Flood insurance is required in Zones A, AE, AH, AO, and VE if a property has a federally backed or insured mortgage, but not in Zones D or X.",
+    stormSurge:
+      "The Storm Surge map identifies areas that could be inundated by storm-driven coastal flooding during hurricanes or tropical storms.",
+    hundredyearFloodplain:
+      "The 100 year Floodplain is a map that displays the the area of land covered in water for a 100 year storm meaning a storm that has a 1 percent chance of occurring every year so a a storm that could happen 1 in 100 years though is is not entirely accurate saying this a major storm that occur every year but has a very low chance of occurring. It is mainly used for long term planning and risk assessment or areas across the state.",
+    fivehundredyearFloodplain:
+      "The 500 year Floodplain is a map that displays the the area of land covered in water for a 500 year storm meaning a storm that has a 0.2 percent chance of occurring every year so a a storm that could happen 1 in 500 years though is is not entirely accurate saying this a major storm that can occur every year but has a very low chance of occurring.",
+    evacRoutes:
+      "The Evacuation Routes layer shows major routes used for safe evacuation during flood emergencies.",
+    countyLines:
+      "The County Lines layer outlines county boundaries across Florida for geographic context.",
   };
 
-  // Attach event listener to each info button
   infoButtons.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
       const layerId = btn.getAttribute("data-layer");
-      const infoText = layerInfo[layerId] || "No information available for this layer.";
+      const infoText =
+        layerInfo[layerId] || "No information available for this layer.";
 
-      
       document.getElementById("infoText").innerHTML = `<p>${infoText}</p>`;
-
-      
-      document.querySelector(".sidebar").classList.add("open");
+   
     });
   });
 });
 
-// Sidebar toggle logic
-const sidebar = document.getElementById("mapInfo");
-const toggleBtn = document.getElementById("sidebarToggle");
-
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.toggle("open");
-});
-
-// Tutorial popup logic
+// Tutorial popup
 const tutorialPopup = document.getElementById("tutorialPopup");
 const closeTutorialBtn = document.getElementById("closeTutorial");
 
-
-// Close tutorial on button click
+// Close tutorial
 const modal = document.getElementById("myModal");
 const openBtn = document.getElementById("openModalBtn");
 const closeBtn = document.querySelector(".close-button");
@@ -1467,7 +1387,6 @@ closeBtn.onclick = function () {
   modal.style.display = "none";
 };
 
-// Close the modal if the user clicks outside of the modal content
 window.onclick = function (event) {
   if (event.target == modal) {
     modal.style.display = "none";
